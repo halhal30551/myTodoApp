@@ -7,7 +7,7 @@
 +アイコンのボタン又はメニューから「Add Task」を選択する  
  - 「TASK」...やるべきことのタイトル（必須）  
  - 「NOTE」...詳細など（無記入でも可）  
-「ADD TASK」ボタン押すと追加される  
+ - 「ADD TASK」ボタン押すと追加される  
 
 各タスクを押すと、詳細（NOTE）が表示される  
 タスクが完了したときは、「complete this task」ボタンを押すとタスクが削除される  
@@ -20,8 +20,8 @@
 ## 設計方針(Design Policy)
 
 画面（Widget）と関数をなるべく分ける  
-　- main.dart...画面  
-　- sub.dart...関数  
+ - main.dart...画面  
+ - sub.dart...関数  
 
 授業で扱われた要素をなるべく使う（riverpod, listView, bottomSheet, Navigator, 非同期処理）  
 
