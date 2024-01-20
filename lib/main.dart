@@ -205,7 +205,7 @@ class MyHomePage extends ConsumerWidget {   //メイン画面
                                     return MyHomePage(title: 'MY TODO APP');
                                   }));
                                 },
-                                child: const Text('completed this task',style: TextStyle(fontSize: 20),)
+                                child: const Text('complete this task',style: TextStyle(fontSize: 20),)
                             ),
                             const SizedBox(height: 16,),
                             IconButton(
