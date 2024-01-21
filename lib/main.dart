@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:myapp/sub.dart';
+import 'package:myTodoApp/sub.dart';
 
 void main() {
   runApp(
@@ -16,47 +16,139 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    String Instancekey = "123456789";   //データアクセスkey
+    jsonReader(Instancekey, ref);     //保存済みデータ読み出し
     return MaterialApp(
       title: 'My Todo APP',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
         useMaterial3: true,
       ),
-      home: MyHomePage(title: 'MY TODO APP'),
+      home: MyHomePage(title: 'MY TODO APP', Instancekey: Instancekey,),
     );
   }
 }
 
 class MyHomePage extends ConsumerWidget {   //メイン画面
-  MyHomePage({super.key, required this.title});
+  const MyHomePage({super.key, required this.title, required this.Instancekey});
   final String title;
+  final String Instancekey;   //データアクセスkey
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    String Instancekey = "123456789";   //データアクセスkey
-    jsonReader(Instancekey, ref);     //保存済みデータ読み出し
     var tasks = ref.watch(taskModelProvider);   //TaskModel配列監視
-    if(tasks.isEmpty){    //taskがない時の画面
-      return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(title),
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(
+    if(tasks.isEmpty){    //taskがないときの画面
+      return Home_noTask(Instancekey: Instancekey, ref: ref, title: title,);
+    }
+    else{    //taskあるときの画面
+      return Home_existTask(Instancekey: Instancekey, ref: ref, title: title, tasks: tasks,);
+    }
+  }
+}
+
+class Home_noTask extends ConsumerWidget{    //taskがないときの画面
+  const Home_noTask({super.key, required this.Instancekey, required this.ref, required this.title});
+  final String Instancekey;
+  final WidgetRef ref;
+  final String title;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref){
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(title),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
                 color: Colors.yellow,
-                ),
-                padding: const EdgeInsets.all(10),
-                child: Container(
-                  alignment: Alignment.center,
-                  child: const Text('SIDE MENU', style: TextStyle(fontSize: 32),),
+              ),
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                alignment: Alignment.center,
+                child: const Text('SIDE MENU', style: TextStyle(fontSize: 32),),
+              ),
+            ),
+            const SizedBox(height: 32,),
+            ElevatedButton(
+              onPressed: (){
+                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
+                  return TodoAdd(ref: ref, Instancekey: Instancekey);
+                }));
+              },
+              style: ElevatedButton.styleFrom(
+                side: const BorderSide(
+                  color: Colors.green,
+                  width: 1,
                 ),
               ),
-              const SizedBox(height: 32,),
-              ElevatedButton(
+              child: const Text('Add Task', style: TextStyle(fontSize: 20),),
+            ),
+          ],
+        ),
+      ),
+      body: Container(
+        width: MediaQuery.of(context).size.width,
+        alignment: Alignment.center,
+        child: Column(
+          children: [
+            const SizedBox(height: 128,),
+            Text('ADD', style: Theme.of(context).textTheme.displayMedium,),
+            Text('YOUR TASK', style: Theme.of(context).textTheme.displayMedium,),
+            Text('TO DO', style: Theme.of(context).textTheme.displayMedium,),
+            const SizedBox(height: 64,),
+            Text('Click +button', style: Theme.of(context).textTheme.displayMedium,),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(   //押したらtask追加画面に置き換え
+        onPressed: (){
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
+            return TodoAdd(ref:ref, Instancekey: Instancekey,);
+          }));
+        },
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class Home_existTask extends ConsumerWidget{    //taskがあるときの画面
+  const Home_existTask({super.key, required this.Instancekey, required this.ref, required this.title, required this.tasks});
+  final String Instancekey;
+  final WidgetRef ref;
+  final String title;
+  final List<dynamic> tasks;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref){
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .inversePrimary,
+        title: Text(title),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              decoration: const BoxDecoration(
+                color: Colors.yellow,
+              ),
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                alignment: Alignment.center,
+                child: const Text('SIDE MENU', style: TextStyle(fontSize: 32),),
+              ),
+            ),
+            const SizedBox(height: 32,),
+            ElevatedButton(
                 onPressed: (){
                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
                     return TodoAdd(ref: ref, Instancekey: Instancekey);
@@ -68,96 +160,14 @@ class MyHomePage extends ConsumerWidget {   //メイン画面
                     width: 1,
                   ),
                 ),
-                child: const Text('Add Task', style: TextStyle(fontSize: 20),),
-              ),
-            ],
-          ),
-        ),
-        body: Container(
-          width: MediaQuery.of(context).size.width,
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              const SizedBox(height: 128,),
-              Text('ADD', style: Theme.of(context).textTheme.displayMedium,),
-              Text('YOUR TASK', style: Theme.of(context).textTheme.displayMedium,),
-              Text('TO DO', style: Theme.of(context).textTheme.displayMedium,),
-              const SizedBox(height: 64,),
-              Text('Click +button', style: Theme.of(context).textTheme.displayMedium,),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton(   //押したらtask追加画面に置き換え
-          onPressed: (){
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-              return TodoAdd(ref:ref, Instancekey: Instancekey,);
-            }));
-          },
-          tooltip: 'Increment',
-          child: const Icon(Icons.add),
-        ),
-      );
-    }
-    else{    //taskあるとき
-      return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme
-              .of(context)
-              .colorScheme
-              .inversePrimary,
-          title: Text(title),
-        ),
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              DrawerHeader(
-                  decoration: const BoxDecoration(
-                  color: Colors.yellow,
-                ),
-                  padding: const EdgeInsets.all(10),
-                  child: Container(
-                    alignment: Alignment.center,
-                    child: const Text('SIDE MENU', style: TextStyle(fontSize: 32),),
-                  ),
-              ),
-              const SizedBox(height: 32,),
-              ElevatedButton(
-                  onPressed: (){
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-                      return TodoAdd(ref: ref, Instancekey: Instancekey);
-                    }));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    side: const BorderSide(
-                      color: Colors.green,
-                      width: 1,
-                    ),
-                  ),
-                  child: const Text('Add Task', style: TextStyle(fontSize: 20),)
-              ),
-              const SizedBox(height: 32,),
-              ElevatedButton(
-                  onPressed: (){
-                    int rand=Random().nextInt(tasks.length);
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-                      return randomTask(ref: ref,Instancekey: Instancekey,tasks: tasks,index: rand,);
-                    }));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    side: const BorderSide(
-                      color: Colors.green,
-                      width: 1,
-                    ),
-                  ),
-                  child: const Text('Random Task', style: TextStyle(fontSize: 20),)
-              ),
-
-              const SizedBox(height: 32,),
-              ElevatedButton(
+                child: const Text('Add Task', style: TextStyle(fontSize: 20),)
+            ),
+            const SizedBox(height: 32,),
+            ElevatedButton(
                 onPressed: (){
-                  AllDelete(Instancekey, ref);
+                  int rand=Random().nextInt(tasks.length);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-                    return MyHomePage(title: 'MY TODO APP');
+                    return randomTask(ref: ref,Instancekey: Instancekey,tasks: tasks,index: rand,);
                   }));
                 },
                 style: ElevatedButton.styleFrom(
@@ -166,82 +176,109 @@ class MyHomePage extends ConsumerWidget {   //メイン画面
                     width: 1,
                   ),
                 ),
-                child: const Text('Delete All Tasks',style: TextStyle(fontSize: 20),),
-              ),
-            ],
-          ),
-        ),
-        body: ListView.builder(     //taskをList表示
-          itemBuilder: (context, index){
-            return Card(
-              child: InkWell(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16,horizontal: 32),
-                  child: Text(tasks[index].task,style: Theme.of(context).textTheme.headlineMedium,),
-                ),
-                onTap: (){showBottomSheet(context: context, builder: (context){   //備考、完了、シャッフルはBottomSheetに
-                  return Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: 300,
-                      color: Colors.amber,
-                      alignment: Alignment.center,
-                      child: Container(
-                        height: 280,
-                        width: MediaQuery.of(context).size.width-20,
-                        color: const Color.fromRGBO(255, 255, 255, 0.9),
-                        alignment: Alignment.center,
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 16,),
-                            Text(tasks[index].note,style:
-                            Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              color: Colors.black,),
-                            ),
-                            const SizedBox(height: 32,),
-                            ElevatedButton(   //押したらtask削除、HomePageに画面置き換え
-                                onPressed: (){
-                                  jsonDelete(tasks,index, Instancekey,ref);//index
-                                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-                                    return MyHomePage(title: 'MY TODO APP');
-                                  }));
-                                },
-                                child: const Text('complete this task',style: TextStyle(fontSize: 20),)
-                            ),
-                            const SizedBox(height: 16,),
-                            IconButton(
-                                onPressed: (){
-                                  Navigator.of(context).pop();
-                                },
-                                icon: const Icon(Icons.arrow_downward_outlined),
-                                style: IconButton.styleFrom(
-                                  side: const BorderSide(
-                                    color: Colors.blue,
-                                    width: 2,
-                                  ),
-                                  backgroundColor: Colors.white,
-                                ),
-                            )
-                          ],
-                        ),
-                      )
-                  );
-                });},
-              ),
-            );},
-          itemCount: tasks.length,
-        ),
+                child: const Text('Random Task', style: TextStyle(fontSize: 20),)
+            ),
 
-        floatingActionButton: FloatingActionButton(     //押したらtask追加画面に置き換え
-          onPressed: (){
-            Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-              return TodoAdd(ref:ref, Instancekey: Instancekey,);
-            }));
-          },
-          tooltip: 'Increment',
-          child: const Icon(Icons.add),
+            const SizedBox(height: 32,),
+            ElevatedButton(
+              onPressed: (){
+                AllDelete(Instancekey, ref);
+                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
+                  return MyHomePage(title: 'MY TODO APP', Instancekey: Instancekey,);
+                }));
+              },
+              style: ElevatedButton.styleFrom(
+                side: const BorderSide(
+                  color: Colors.green,
+                  width: 1,
+                ),
+              ),
+              child: const Text('Delete All Tasks',style: TextStyle(fontSize: 20),),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+      body: ListOfTasks(ref: ref, Instancekey: Instancekey, tasks: tasks,),     //taskをList表示
+      floatingActionButton: FloatingActionButton(     //押したらtask追加画面に置き換え
+        onPressed: (){
+          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
+            return TodoAdd(ref:ref, Instancekey: Instancekey,);
+          }));
+        },
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
+class ListOfTasks extends ConsumerWidget{     //taskをList表示
+  const ListOfTasks({super.key, required this.ref, required this.Instancekey, required this.tasks});
+  final WidgetRef ref;
+  final String Instancekey;
+  final List<dynamic> tasks;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref){
+    return ListView.builder(     //taskをList表示
+      itemBuilder: (context, index){
+        return Card(
+          child: InkWell(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16,horizontal: 32),
+              child: Text(tasks[index].task,style: Theme.of(context).textTheme.headlineMedium,),
+            ),
+            onTap: (){showBottomSheet(context: context, builder: (context){   //備考、完了、シャッフルはBottomSheetに
+              return Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: 300,
+                  color: Colors.amber,
+                  alignment: Alignment.center,
+                  child: Container(
+                    height: 280,
+                    width: MediaQuery.of(context).size.width-20,
+                    color: const Color.fromRGBO(255, 255, 255, 0.9),
+                    alignment: Alignment.center,
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16,),
+                        Text(tasks[index].note,style:
+                        Theme.of(context).textTheme.headlineLarge?.copyWith(
+                          color: Colors.black,),
+                        ),
+                        const SizedBox(height: 32,),
+                        ElevatedButton(   //押したらtask削除、HomePageに画面置き換え
+                            onPressed: (){
+                              jsonDelete(tasks,index, Instancekey,ref);//index
+                              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
+                                return MyHomePage(title: 'MY TODO APP', Instancekey: Instancekey,);
+                              }));
+                            },
+                            child: const Text('complete this task',style: TextStyle(fontSize: 20),)
+                        ),
+                        const SizedBox(height: 16,),
+                        IconButton(
+                          onPressed: (){
+                            Navigator.of(context).pop();
+                          },
+                          icon: const Icon(Icons.arrow_downward_outlined),
+                          style: IconButton.styleFrom(
+                            side: const BorderSide(
+                              color: Colors.blue,
+                              width: 2,
+                            ),
+                            backgroundColor: Colors.white,
+                          ),
+                        )
+                      ],
+                    ),
+                  )
+              );
+            });},
+          ),
+        );},
+      itemCount: tasks.length,
+    );
   }
 }
 
@@ -290,7 +327,7 @@ class TodoAdd extends ConsumerWidget{     //task追加画面
                 onPressed: (){
                   jsonWriter(ref, Instancekey);
                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-                    return MyHomePage(title: 'MY TODO APP');
+                    return MyHomePage(title: 'MY TODO APP', Instancekey: Instancekey,);
                   }));
                 },
                 child: const Text('ADD TASK',style: TextStyle(fontSize: 20)),
@@ -301,7 +338,7 @@ class TodoAdd extends ConsumerWidget{     //task追加画面
                   ref.read(taskProvider.notifier).state = '';
                   ref.read(noteProvider.notifier).state = '';
                   Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-                    return MyHomePage(title: 'MY TODO APP');
+                    return MyHomePage(title: 'MY TODO APP', Instancekey: Instancekey,);
                   }));
                 },
                 child: const Text('click to back (cancel)',style: TextStyle(fontSize: 20)),
@@ -365,7 +402,7 @@ class randomTask extends ConsumerWidget{    //ランダムにタスクを選ん�
                   onPressed: (){
                     jsonDelete(tasks, index, Instancekey, ref);
                     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context){
-                      return MyHomePage(title: 'MY TODO APP');
+                      return MyHomePage(title: 'MY TODO APP', Instancekey: Instancekey,);
                     }));
                   },
                   child: const Text('complete this task', style: TextStyle(fontSize: 24),)
