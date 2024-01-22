@@ -37,7 +37,7 @@
 ## 動作環境(Operating Environment)
 
 Flutter : 3.13.9  
-dart(SDK) : >=3.1.5 <4.0.0  
+dart : >=3.1.5 <4.0.0  
 
 cupertino_icons : ^1.0.2  
 flutter_riverpod : ^2.4.9  
